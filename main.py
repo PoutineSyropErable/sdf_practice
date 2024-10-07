@@ -2,6 +2,8 @@ import numpy as np
 import igl
 import polyscope as ps
 import time
+import os, sys
+
 
 # Function to calculate the signed distance function (SDF)
 def compute_sdf(points, mesh_vertices, mesh_faces):
@@ -27,7 +29,7 @@ def generate_grid(xmin, xmax, ymin, ymax, zmin, zmax, N, M, L, rx, ry, rz):
     grid_points = np.array(np.meshgrid(x_points, y_points, z_points)).T.reshape(-1, 3)
     return grid_points
 
-# Click callback function
+# Click callback function -- Gepeto Halucination
 def point_click_callback(idx):
     point_info = grid_points[idx]  # Get the coordinates of the clicked point
     sdt_value = sdt[idx]            # Get the corresponding SDF value
@@ -45,6 +47,9 @@ def point_click_callback(idx):
 
 # Main execution block
 if __name__ == "__main__":
+    
+    os.chdir(sys.path[0])
+
     start_time = time.time()
 
     # Load the mesh
@@ -67,15 +72,15 @@ if __name__ == "__main__":
     sdt = compute_sdf(grid_points, mesh_vertices, mesh_faces)
     print("Signed Distance Function (SDF):", sdt)
 
-    # Initialize Polyscope
+        # Initialize Polyscope
     ps.init()
 
-    # Add the bunny mesh
-    ps_mesh = ps.Mesh("Bunny", mesh_vertices, mesh_faces)
-    ps_mesh.add_vertex_color("sdf", sdt)  # Visualize SDF as vertex colors
-    ps_mesh.add_edge_color("black")  # Optional: add edge color
-    ps_mesh.set_vertex_radius(0.01)  # Set vertex size
-    ps_mesh.set_edge_radius(0.005)  # Set edge size
+    # Register the bunny mesh
+    ps_mesh = ps.register_surface_mesh("Bunny", mesh_vertices, mesh_faces) 
+    #ps_mesh.add_vertex_color("sdf", sdt)  # Visualize SDF as vertex colors
+    # ps_mesh.add_edge_color("black")  # Optional: add edge color
+    # ps_mesh.set_vertex_radius(0.01)  # Set vertex size
+    # ps_mesh.set_edge_radius(0.005)  # Set edge size
 
     # Add the bounding box as a mesh
     bbox_vertices = np.array([
@@ -98,16 +103,17 @@ if __name__ == "__main__":
         [3, 0, 4], [3, 4, 7],  # Side
     ])
     
-    ps_bbox = ps.Mesh("Bounding Box", bbox_vertices, bbox_faces)
-    ps_bbox.set_color("blue")  # Set bounding box color
+    ps_bbox = ps.register_surface_mesh("Bounding Box", bbox_vertices, bbox_faces)
+    # ps_bbox.set_color("blue")  # Set bounding box color
 
     # Add grid points as interactive point cloud
     ps_points = ps.PointCloud("Grid Points", grid_points)
     ps_points.set_radius(0.01)  # Set size of the grid points
-    ps_points.set_color("red")  # Set color of the grid points
+    ps_points.
+    # ps_points.set_color("red")  # Set color of the grid points
     
     # Register the point click callback
-    ps_points.set_click_callback(point_click_callback)
+    # ps_points.set_click_callback(point_click_callback)
 
     # Show the visualization
     ps.show()
