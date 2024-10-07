@@ -1,5 +1,5 @@
 import numpy as np
-import pyigl as igl
+import igl
 import polyscope as ps
 import time
 
@@ -26,6 +26,12 @@ def generate_grid(xmin, xmax, ymin, ymax, zmin, zmax, N, M, L, rx, ry, rz):
 
     grid_points = np.array(np.meshgrid(x_points, y_points, z_points)).T.reshape(-1, 3)
     return grid_points
+
+# Click callback function
+def point_click_callback(idx):
+    point_info = grid_points[idx]  # Get the coordinates of the clicked point
+    sdt_value = sdt[idx]            # Get the corresponding SDF value
+    print(f"Point clicked: {point_info}, SDF: {sdt_value}")
 
 # Main execution block
 if __name__ == "__main__":
@@ -56,7 +62,7 @@ if __name__ == "__main__":
 
     # Add the bunny mesh
     ps_mesh = ps.Mesh("Bunny", mesh_vertices, mesh_faces)
-    ps_mesh.add_vertex_color("sdf", sdt)  # You can visualize SDF as vertex colors
+    ps_mesh.add_vertex_color("sdf", sdt)  # Visualize SDF as vertex colors
     ps_mesh.add_edge_color("black")  # Optional: add edge color
     ps_mesh.set_vertex_radius(0.01)  # Set vertex size
     ps_mesh.set_edge_radius(0.005)  # Set edge size
@@ -85,10 +91,13 @@ if __name__ == "__main__":
     ps_bbox = ps.Mesh("Bounding Box", bbox_vertices, bbox_faces)
     ps_bbox.set_color("blue")  # Set bounding box color
 
-    # Add grid points
+    # Add grid points as interactive point cloud
     ps_points = ps.PointCloud("Grid Points", grid_points)
     ps_points.set_radius(0.01)  # Set size of the grid points
     ps_points.set_color("red")  # Set color of the grid points
+    
+    # Register the point click callback
+    ps_points.set_click_callback(point_click_callback)
 
     # Show the visualization
     ps.show()
