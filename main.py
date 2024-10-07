@@ -31,7 +31,17 @@ def generate_grid(xmin, xmax, ymin, ymax, zmin, zmax, N, M, L, rx, ry, rz):
 def point_click_callback(idx):
     point_info = grid_points[idx]  # Get the coordinates of the clicked point
     sdt_value = sdt[idx]            # Get the corresponding SDF value
-    print(f"Point clicked: {point_info}, SDF: {sdt_value}")
+    
+    # Calculate the closest point on the bunny mesh
+    closest_point, _ = igl.point_mesh_squared_distance(point_info.reshape(1, -1), mesh_vertices, mesh_faces)
+    closest_point = closest_point.flatten()  # Get the closest point coordinates
+
+    # Print information about the clicked point and its SDF value
+    print(f"Point clicked: {point_info}, SDF: {sdt_value}, Closest Point: {closest_point}")
+
+    # Create a line segment between the clicked point and the closest point on the mesh
+    line_points = np.array([point_info, closest_point])
+    ps.LineSegment("Line to Closest Point", line_points)
 
 # Main execution block
 if __name__ == "__main__":
