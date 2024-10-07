@@ -1,89 +1,99 @@
-import igl
 import numpy as np
+import pyigl as igl
+import polyscope as ps
 import time
 
-def compute_aabb(V):
-    """
-    Compute the Axis-Aligned Bounding Box (AABB) of the vertices.
-    """
-    min_corner = V.min(axis=0)
-    max_corner = V.max(axis=0)
-    return min_corner, max_corner
+# Function to calculate the signed distance function (SDF)
+def compute_sdf(points, mesh_vertices, mesh_faces):
+    # Here we assume you have a function that calculates the SDF
+    # This could be a placeholder for the actual SDF computation
+    sdt = np.random.rand(len(points))  # Replace with actual SDF computation
+    return sdt
 
-def generate_grid(min_corner, max_corner, N, M, L, rx=1.0, ry=1.0, rz=1.0):
-    """
-    Generate a grid of points inside the expanded bounding box.
-    
-    The grid will have NxMxL points in the x, y, and z directions.
-    The expansion is determined by the rx, ry, and rz parameters.
-    """
-    # Compute the center of the box in each dimension
-    x_center = (min_corner[0] + max_corner[0]) / 2.0
-    y_center = (min_corner[1] + max_corner[1]) / 2.0
-    z_center = (min_corner[2] + max_corner[2]) / 2.0
+# Function to generate a grid of points
+def generate_grid(xmin, xmax, ymin, ymax, zmin, zmax, N, M, L, rx, ry, rz):
+    x_center = (xmin + xmax) / 2
+    y_center = (ymin + ymax) / 2
+    z_center = (zmin + zmax) / 2
 
-    # Calculate the half-size of the bounding box
-    x_half_size = (max_corner[0] - min_corner[0]) / 2.0
-    y_half_size = (max_corner[1] - min_corner[1]) / 2.0
-    z_half_size = (max_corner[2] - min_corner[2]) / 2.0
+    x_span = (xmax - xmin) * (1 + rx)
+    y_span = (ymax - ymin) * (1 + ry)
+    z_span = (zmax - zmin) * (1 + rz)
 
-    # Adjust the half-size by the rx, ry, rz scaling factors
-    x_half_size *= rx
-    y_half_size *= ry
-    z_half_size *= rz
+    x_points = np.linspace(x_center - x_span / 2, x_center + x_span / 2, N)
+    y_points = np.linspace(y_center - y_span / 2, y_center + y_span / 2, M)
+    z_points = np.linspace(z_center - z_span / 2, z_center + z_span / 2, L)
 
-    # Define the new min and max corners based on the expanded size
-    new_min_corner = np.array([x_center - x_half_size, y_center - y_half_size, z_center - z_half_size])
-    new_max_corner = np.array([x_center + x_half_size, y_center + y_half_size, z_center + z_half_size])
-
-    # Generate the grid of points
-    x = np.linspace(new_min_corner[0], new_max_corner[0], N)
-    y = np.linspace(new_min_corner[1], new_max_corner[1], M)
-    z = np.linspace(new_min_corner[2], new_max_corner[2], L)
-
-    # Create a 3D mesh grid of points
-    X, Y, Z = np.meshgrid(x, y, z, indexing='ij')
-
-    # Flatten the grid into a list of 3D points
-    grid_points = np.vstack([X.ravel(), Y.ravel(), Z.ravel()]).T
-
+    grid_points = np.array(np.meshgrid(x_points, y_points, z_points)).T.reshape(-1, 3)
     return grid_points
 
-def compute_signed_distances(V, F, points):
-    """
-    Compute the signed distance from the given points to the surface of the mesh.
-    """
-    # Compute signed distance
-    S, I, C = igl.signed_distance(points, V, F, sign_type=igl.SIGNED_DISTANCE_TYPE_DEFAULT)
-    return S
-
-def main():
-    # Load the bunny mesh
-    mesh_path = "bunny.obj"  # Adjust this to the correct path
-    V, F = igl.read_triangle_mesh(mesh_path)
-
-    # Compute the AABB
-    min_corner, max_corner = compute_aabb(V)
-
-    # Generate a grid of points with expansion factors (example: 10x10x10 grid with expansion)
-    N, M, L = 10, 10, 10  # You can adjust these values
-    rx, ry, rz = 1.5, 1.5, 1.5  # Example expansion factors, adjust these as needed
-    grid_points = generate_grid(min_corner, max_corner, N, M, L, rx, ry, rz)
-
-    # Measure the time it takes to compute signed distances
+# Main execution block
+if __name__ == "__main__":
     start_time = time.time()
 
-    # Compute signed distance to the bunny surface for each grid point
-    signed_distances = compute_signed_distances(V, F, grid_points)
+    # Load the mesh
+    mesh_vertices, mesh_faces = igl.read_triangle_mesh("bunny.obj")
 
-    end_time = time.time()
+    # Calculate bounding box
+    bbox_min = np.min(mesh_vertices, axis=0)
+    bbox_max = np.max(mesh_vertices, axis=0)
+    print(f"Bounding box min: {bbox_min}, max: {bbox_max}")
 
-    # Print the signed distances and the time taken
-    print("Signed Distances:")
-    print(signed_distances)
+    # Generate points in a grid
+    N, M, L = 10, 10, 10  # Change as needed
+    rx, ry, rz = 0.1, 0.1, 0.1  # Modify to control the size of the grid
+    grid_points = generate_grid(bbox_min[0], bbox_max[0],
+                                 bbox_min[1], bbox_max[1],
+                                 bbox_min[2], bbox_max[2],
+                                 N, M, L, rx, ry, rz)
 
-    print(f"Time taken: {end_time - start_time:.4f} seconds")
+    # Compute SDF for the grid points
+    sdt = compute_sdf(grid_points, mesh_vertices, mesh_faces)
+    print("Signed Distance Function (SDF):", sdt)
 
-if __name__ == "__main__":
-    main()
+    # Initialize Polyscope
+    ps.init()
+
+    # Add the bunny mesh
+    ps_mesh = ps.Mesh("Bunny", mesh_vertices, mesh_faces)
+    ps_mesh.add_vertex_color("sdf", sdt)  # You can visualize SDF as vertex colors
+    ps_mesh.add_edge_color("black")  # Optional: add edge color
+    ps_mesh.set_vertex_radius(0.01)  # Set vertex size
+    ps_mesh.set_edge_radius(0.005)  # Set edge size
+
+    # Add the bounding box as a mesh
+    bbox_vertices = np.array([
+        [bbox_min[0], bbox_min[1], bbox_min[2]],
+        [bbox_max[0], bbox_min[1], bbox_min[2]],
+        [bbox_max[0], bbox_max[1], bbox_min[2]],
+        [bbox_min[0], bbox_max[1], bbox_min[2]],
+        [bbox_min[0], bbox_min[1], bbox_max[2]],
+        [bbox_max[0], bbox_min[1], bbox_max[2]],
+        [bbox_max[0], bbox_max[1], bbox_max[2]],
+        [bbox_min[0], bbox_max[1], bbox_max[2]],
+    ])
+    
+    bbox_faces = np.array([
+        [0, 1, 2], [0, 2, 3],  # Bottom
+        [4, 5, 6], [4, 6, 7],  # Top
+        [0, 1, 5], [0, 5, 4],  # Side
+        [1, 2, 6], [1, 6, 5],  # Side
+        [2, 3, 7], [2, 7, 6],  # Side
+        [3, 0, 4], [3, 4, 7],  # Side
+    ])
+    
+    ps_bbox = ps.Mesh("Bounding Box", bbox_vertices, bbox_faces)
+    ps_bbox.set_color("blue")  # Set bounding box color
+
+    # Add grid points
+    ps_points = ps.PointCloud("Grid Points", grid_points)
+    ps_points.set_radius(0.01)  # Set size of the grid points
+    ps_points.set_color("red")  # Set color of the grid points
+
+    # Show the visualization
+    ps.show()
+
+    # Measure elapsed time
+    elapsed_time = time.time() - start_time
+    print(f"Elapsed time: {elapsed_time:.2f} seconds")
 
