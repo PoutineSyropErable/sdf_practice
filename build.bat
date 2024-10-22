@@ -1,1 +1,2 @@
-python main.py
+python train.py
+python use_model.py
