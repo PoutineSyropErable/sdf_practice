@@ -1,6 +1,5 @@
-
 #!/bin/bash
 
-source $HOME/MainPython_Virtual_Environment/pip_venv/bin/activate
+source $HOME/MainPython_Virtual_Environment/pip3_venv/bin/activate
 
-python main.py
+python train.py
