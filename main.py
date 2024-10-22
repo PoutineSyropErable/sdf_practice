@@ -109,7 +109,7 @@ if __name__ == "__main__":
     # Add grid points as interactive point cloud
     ps_points = ps.PointCloud("Grid Points", grid_points)
     ps_points.set_radius(0.01)  # Set size of the grid points
-    ps_points.
+    # ps_points.
     # ps_points.set_color("red")  # Set color of the grid points
     
     # Register the point click callback
