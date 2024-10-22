@@ -73,11 +73,16 @@ def filter_function( signed_distance: float) -> bool:
 
 
 
-
 filtered_index = np.array([  i for i in range(len(signed_distances)) if filter_function(signed_distances[i])  ]) 
-print(f"\nfiltered_index= {filtered_index}, {len(filtered_index)}")
+
 filtered_signed_distances = signed_distances[filtered_index]
 filtered_points = point_list[filtered_index]
+
+
+
+print(f"\n\n\nfiltered_index= {filtered_index}, {len(filtered_index)} \n")
+print(f"filtered_points = \n{filtered_points} \n")
+print(f"filtered_signed_distances = \n{filtered_signed_distances} \n")
 
 
 
