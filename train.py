@@ -35,12 +35,12 @@ def compute_bounding_box(V: np.ndarray) -> (np.ndarray, np.ndarray):
         center = (min_val + max_val) / 2
         half_length = max_val - center 
 
-        BOX_RATIO = 1.35
+        BOX_RATIO = 1.5
 
         print("c,h=",center,half_length)
 
-        b_min[i] = min_val - half_length * BOX_RATIO 
-        b_max[i] = max_val + half_length * BOX_RATIO
+        b_min[i] = center - half_length * BOX_RATIO 
+        b_max[i] = center + half_length * BOX_RATIO
 
     return b_min, b_max
 
@@ -303,7 +303,7 @@ def main():
     
 
     # Filter points
-    filtered_index = filter_points(signed_distances, weight_exponent = 12)
+    filtered_index = filter_points(signed_distances, weight_exponent = 20)
     filtered_signed_distances = signed_distances[filtered_index]
     filtered_points = point_list[filtered_index]
     filtered_nearest = nearest_points[filtered_index]
@@ -323,6 +323,13 @@ def main():
     
     # Doing the machine learning steps
     print(f"\n\n------------------\nRuns on GPU?: {torch.cuda.is_available()}\n------------------\n\n")
+
+    print("CUDA available:", torch.cuda.is_available())
+    print("GPU Device Count:", torch.cuda.device_count())
+    print("Current GPU Device:", torch.cuda.current_device())
+    print("GPU Name:", torch.cuda.get_device_name(torch.cuda.current_device()))
+
+
     data_loader = prepare_data(filtered_points, filtered_signed_distances)
     trained_model = train_model(data_loader, num_epochs=NUMBER_EPOCHS, learning_rate=0.001)
 
