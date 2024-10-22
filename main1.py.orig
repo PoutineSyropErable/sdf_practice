@@ -2,7 +2,37 @@ import numpy as np
 import igl
 import polyscope as ps
 import time
+<<<<<<< HEAD:main1.py
+import torch
+
+
+
+def primes(n: int) -> list[int]:
+    """ Return a list of the first n primes."""
+    sieve = [True] * n 
+    res = []
+    x = 0.1
+
+
+    for i in range(2,n):
+        if sieve[i]:
+            res.append(i)
+            for j in range(i*i,n,i):
+                sieve[j] = False
+
+    return res
+
+xs = primes(100)
+xs.sort()
+print(xs)
+
+
+
+
+
+=======
 import os, sys
+>>>>>>> 7187dccf3b701f82a425a6fe9096f8c6fb611c0d:main.py
 
 
 # Function to calculate the signed distance function (SDF)

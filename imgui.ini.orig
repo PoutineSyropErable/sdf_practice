@@ -8,6 +8,9 @@ Size=305,156
 
 [Window][Structures]
 Pos=10,186
+<<<<<<< HEAD
+Size=305,784
+=======
 Size=305,524
 
 [Window][Selection]
@@ -17,4 +20,5 @@ Size=500,98
 [Window][Controls]
 Pos=325,10
 Size=440,378
+>>>>>>> 7187dccf3b701f82a425a6fe9096f8c6fb611c0d
 
